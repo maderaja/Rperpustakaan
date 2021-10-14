@@ -1,0 +1,219 @@
+<?php
+session_start();
+require 'functions.php';
+
+if (isset($_POST["login"])) {
+  $username = $_POST["username"];
+  $password = $_POST["password"];
+
+  $siswa = mysqli_query($conn, "SELECT * FROM siswa WHERE username = '$username'");
+  $petugas = mysqli_query($conn, "SELECT * FROM petugas WHERE username = '$username'");
+  $admin = mysqli_query($conn, "SELECT * FROM admin WHERE username = '$username'");
+
+  // Cek username
+  if (mysqli_num_rows($siswa) === 1) {
+
+    // Cek password
+    $rowSiswa = mysqli_fetch_assoc($siswa);
+    if (password_verify($password, $rowSiswa["password"])) {
+      $_SESSION['login'] = true;
+      $_SESSION['username'] = $rowSiswa["name"];
+      $_SESSION['level'] = "Siswa";
+      header("location: siswa/home.php");
+    } else {
+      $errorPass = true;
+    }
+  } elseif (mysqli_num_rows($petugas) === 1) {
+    $rowPetugas = mysqli_fetch_assoc($petugas);
+    if (password_verify($password, $rowPetugas["password"])) {
+      $_SESSION['login'] = true;
+      $_SESSION['username'] = $rowPetugas["nama"];
+      $_SESSION['level'] = "Petugas";
+      header("location: petugas/home.php");
+    } else {
+      $errorPass = true;
+    }
+  } elseif (mysqli_num_rows($admin) === 1) {
+    $rowAdmin = mysqli_fetch_assoc($admin);
+    if ($password == $rowAdmin["password"]) {
+      $_SESSION['login'] = true;
+      $_SESSION['username'] = $rowAdmin["nama"];
+      $_SESSION['level'] = "Admin";
+      header("location: admin/home.php");
+    } else {
+      $errorPass = true;
+    }
+  } else {
+    $errorUsername = true;
+  }
+}
+
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Bootstrap CSS -->
+  <link href="bs5/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="icon/css/all.min.css" />
+
+  <!-- self css -->
+  <link rel="stylesheet" href="css/form.css" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/checkbox.css" />
+  <link rel="stylesheet" href="css/responsive.css" />
+
+  <link rel="icon" href="icon/logo.png">
+  <title>Login</title>
+
+  <style>
+    body {
+      background-color: #d3dde2;
+    }
+
+    .cover {
+      z-index: 999;
+      border-top-left-radius: 20px;
+      border-bottom-left-radius: 20px;
+    }
+
+    .bg-cover2 {
+      background-color: #207ba5;
+    }
+
+    .judul {
+      color: #fff;
+    }
+
+    .desc {
+      font-size: 18px;
+      font-weight: 400;
+      color: #fff;
+      margin-top: 24px;
+      background-color: rgba(51, 51, 51, 0.822);
+    }
+
+    .text-bold {
+      font-weight: bold;
+    }
+
+    .link {
+      text-decoration: underline;
+      color: #fff;
+      font-weight: bold;
+    }
+
+    .link:hover {
+      color: rgb(186, 185, 185);
+      font-weight: bold;
+    }
+
+    .btn-purple {
+      background-color: #9e005d;
+      color: #fff;
+      transition: 300ms;
+      width: 100%;
+      padding: 16px;
+    }
+
+    .btn-purple:hover {
+      background-color: #770046;
+      color: #fff;
+    }
+
+    .circle-icon {
+      height: 100%;
+      background-color: #9e005d;
+    }
+  </style>
+
+</head>
+
+<body>
+  <div class="container-fluid">
+    <!-- Form Login -->
+    <div class="row justify-content-center">
+      <div class="col-xl-10 col-lg-10 col-md-9">
+        <div class="card o-hidden border-0 shadow-lg my-5">
+          <div class="card-body p-0">
+            <div class="row">
+              <!-- cover -->
+              <div class="col-sm-5 d-none d-lg-block position-relative cover" style="background: url('img/bgc1.jpg'); background-size: cover">
+                <center class="mt-4">
+                  <img src="icon/logo.png" width="50%" />
+                </center>
+                <div class="text-center mt-5">
+                  <p class="desc">"Makin aku banyak membaca, makin aku banyak berfikir. Makin aku banyak belajar, makin aku sadar bahwa aku tak mengetahui apa pun." - Voltaire</p>
+                </div>
+              </div>
+
+              <!-- form control -->
+              <div class="col-sm-7 bg-cover2 position-relative rounded coverr">
+                <div class="position-relative coverr">
+                  <form action="" method="POST">
+                    <div class="row justify-content-center mt-5">
+                      <div class="text-center mt-4">
+                        <h1 class="h2 judul text-bold">LOGIN</h1>
+                      </div>
+
+                      <div class="col-lg-10 col-md-8 mt-5">
+                        <div class="input-container">
+                          <i class="far fa-user icon"></i>
+                          <input class="input-field" type="text" placeholder="Username (NIS)" name="username" id="username" required autocomplete="off" />
+                        </div>
+                      </div>
+
+                      <div class="col-lg-10 col-md-8">
+                        <div class="input-container">
+                          <i class="fas fa-lock icon"></i>
+                          <input class="input-field" type="password" placeholder="Password" name="password" id="password" required autocomplete="off" />
+                        </div>
+                      </div>
+
+                      <?php if (isset($errorPass)) : ?>
+                        <div class="text-center alert alert-danger alert-dismissible fade show mx-auto" role="alert">
+                          <strong>Password Yang Anda Masukkan SALAH!</strong>
+                        </div>
+                      <?php endif; ?>
+
+                      <?php if (isset($errorUsername)) : ?>
+                        <div class="text-center alert alert-danger alert-dismissible fade show mx-auto" role="alert">
+                          <strong>Username Yang Anda Masukkan TIDAK TERDAFTAR!</strong>
+                        </div>
+                      <?php endif; ?>
+
+                      <div class="col-lg-9 col-md-7">
+                        <div class="d-flex justify-content-between">
+                          <div class="form-group my-4">
+                            <label class="container font-check">Remember
+                              <input type="checkbox" />
+                              <span class="checkmark"></span>
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="col-lg-10 col-md-8 mt-3">
+                        <button type="submit" name="login" class="btn btn-purple rounded-pill shadow mb-4"><i class="fas fa-lock"></i> LOGIN</button>
+                      </div>
+
+                      <div class="col-lg-12 mb-5">
+                        <div class="d-flex justify-content-center"><span class="me-2 text-white">Belum memiliki akun?</span><a href="registrasi.php" class="link">Register</a></div>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>
